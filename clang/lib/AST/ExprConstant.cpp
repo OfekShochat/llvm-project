@@ -57,6 +57,7 @@
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/SaveAndRestore.h"
 #include "llvm/Support/raw_ostream.h"
+#include <cstdio>
 #include <cstring>
 #include <functional>
 
@@ -195,6 +196,7 @@ namespace {
     // arrays that lack size info.
     assert(!isBaseAnAllocSizeCall(Base) &&
            "Unsized arrays shouldn't appear here");
+    printf("coahaanst\n");
     unsigned MostDerivedLength = 0;
     Type = getType(Base);
 
@@ -206,8 +208,10 @@ namespace {
         IsArray = true;
 
         if (auto *CAT = dyn_cast<ConstantArrayType>(AT)) {
+          printf("const\n");
           ArraySize = CAT->getSize().getZExtValue();
         } else {
+          printf("not const\n");
           assert(I == 0 && "unexpected unsized array designator");
           FirstEntryIsUnsizedArray = true;
           ArraySize = AssumedSizeForUnsizedArray;

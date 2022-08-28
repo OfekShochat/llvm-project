@@ -14,6 +14,7 @@
 
 #include "clang/CodeGen/ConstantInitBuilder.h"
 #include "CodeGenModule.h"
+#include <cstdio>
 
 using namespace clang;
 using namespace CodeGen;
@@ -80,6 +81,8 @@ ConstantInitBuilderBase::createGlobal(llvm::Constant *initializer,
                                      llvm::GlobalValue::NotThreadLocal,
                                      addressSpace);
   GV->setAlignment(alignment.getAsAlign());
+#include <stdio.h>
+  printf("ooo\n");
   resolveSelfReferences(GV);
   return GV;
 }
@@ -269,6 +272,8 @@ llvm::Constant *ConstantAggregateBuilderBase::finishArray(llvm::Type *eltTy) {
           (Begin == buffer.size() && eltTy))
          && "didn't add any array elements without element type");
   auto elts = llvm::makeArrayRef(buffer).slice(Begin);
+#include <stdio.h>
+  printf("%u\n", elts[0]->getType()->getScalarSizeInBits());
   if (!eltTy) eltTy = elts[0]->getType();
   auto type = llvm::ArrayType::get(eltTy, elts.size());
   auto constant = llvm::ConstantArray::get(type, elts);
@@ -282,6 +287,8 @@ ConstantAggregateBuilderBase::finishStruct(llvm::StructType *ty) {
 
   auto &buffer = getBuffer();
   auto elts = llvm::makeArrayRef(buffer).slice(Begin);
+#include <stdio.h>
+  printf("hah\n");
 
   if (ty == nullptr && elts.empty())
     ty = llvm::StructType::get(Builder.CGM.getLLVMContext(), {}, Packed);

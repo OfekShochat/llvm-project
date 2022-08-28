@@ -10,9 +10,11 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "clang-c/Index.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/DeclTemplate.h"
 #include "clang/AST/PrettyDeclStackTrace.h"
+#include "clang/AST/PrettyPrinter.h"
 #include "clang/Basic/AddressSpaces.h"
 #include "clang/Basic/AttributeCommonInfo.h"
 #include "clang/Basic/Attributes.h"
@@ -29,6 +31,9 @@
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringSwitch.h"
+#include "llvm/Support/raw_ostream.h"
+#include <cstdio>
+#include <iostream>
 
 using namespace clang;
 

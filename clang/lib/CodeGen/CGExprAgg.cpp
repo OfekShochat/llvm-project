@@ -26,6 +26,7 @@
 #include "llvm/IR/GlobalVariable.h"
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/IR/Intrinsics.h"
+#include <cstdio>
 using namespace clang;
 using namespace CodeGen;
 
@@ -1527,6 +1528,7 @@ static bool isSimpleZero(const Expr *E, CodeGenFunction &CGF) {
 void
 AggExprEmitter::EmitInitializationToLValue(Expr *E, LValue LV) {
   QualType type = LV.getType();
+  printf("hey\n");
   // FIXME: Ignore result?
   // FIXME: Are initializers affected by volatile?
   if (Dest.isZeroed() && isSimpleZero(E, CGF)) {
