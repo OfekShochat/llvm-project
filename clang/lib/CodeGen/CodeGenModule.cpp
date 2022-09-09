@@ -69,6 +69,7 @@
 #include "llvm/Support/TimeProfiler.h"
 #include "llvm/Support/X86TargetParser.h"
 #include "llvm/Support/xxhash.h"
+#include <cstdio>
 
 using namespace clang;
 using namespace CodeGen;
@@ -4838,6 +4839,7 @@ void CodeGenModule::EmitGlobalVarDefinition(const VarDecl *D,
   llvm::Type* InitType = Init->getType();
   llvm::Constant *Entry =
       GetAddrOfGlobalVar(D, InitType, ForDefinition_t(!IsTentative));
+  printf("oof\n");
 
   // Strip off pointer casts if we got them.
   Entry = Entry->stripPointerCasts();

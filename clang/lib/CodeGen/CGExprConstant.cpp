@@ -1253,10 +1253,10 @@ public:
       Inits.push_back(C);
     }
 
-    // If all elements have the same type, just emit an array constant.
-    if (CommonElementType)
-      return llvm::ConstantArray::get(
-          llvm::ArrayType::get(CommonElementType, NumElements), Inits);
+    // // If all elements have the same type, just emit an array constant.
+    // if (CommonElementType)
+    //   return llvm::ConstantArray::get(
+    //       llvm::ArrayType::get(CommonElementType, NumElements), Inits);
 
     uint64_t TrailingZeroes = NumElements - NumInitElements;
 
