@@ -1222,29 +1222,18 @@ public:
   llvm::Constant *EmitArrayInitialization(InitListExpr *ILE, QualType T) {
     auto *CAT = CGM.getContext().getAsConstantArrayType(ILE->getType());
     assert(CAT && "can't emit array init for non-constant-bound array");
-    unsigned NumInitElements = ILE->getNumInits();
-    unsigned NumElements = CAT->getSize().getZExtValue();
+    uint64_t NumInitElements = ILE->getNumInits();
+    uint64_t NumElements = CAT->getSize().getZExtValue();
+    printf("hi\n");
 
     // Initialising an array requires us to automatically
     // initialise any elements that have not been initialised explicitly
-    unsigned NumInitableElts = std::min(NumInitElements, NumElements);
+    uint64_t NumInitableElts = std::min(NumInitElements, NumElements);
 
     QualType EltType = CAT->getElementType();
 
-    // Initialize remaining array elements.
-    llvm::Constant *fillC = nullptr;
-    if (Expr *filler = ILE->getArrayFiller()) {
-      fillC = Emitter.tryEmitAbstractForMemory(filler, EltType);
-      if (!fillC)
-        return nullptr;
-    }
-
-    // Copy initializer elements.
-    SmallVector<llvm::Constant*, 16> Elts;
-    if (fillC && fillC->isNullValue())
-      Elts.reserve(NumInitableElts + 1);
-    else
-      Elts.reserve(NumElements);
+    SmallVector<llvm::Constant *, 16> Inits;
+    Inits.reserve(NumInitableElts + 1);
 
     llvm::Type *CommonElementType = nullptr;
     for (unsigned i = 0; i < NumInitableElts; ++i) {
@@ -1256,13 +1245,33 @@ public:
         CommonElementType = C->getType();
       else if (C->getType() != CommonElementType)
         CommonElementType = nullptr;
-      Elts.push_back(C);
+      Inits.push_back(C);
     }
 
-    llvm::ArrayType *Desired =
+    uint64_t TrailingZeroes = NumElements - NumInitElements;
+
+    // If all elements have the same type, just emit an array constant.
+    if (CommonElementType && TrailingZeroes == 0)
+      return llvm::ConstantArray::get(
+          llvm::ArrayType::get(CommonElementType, NumElements), Inits);
+
+    llvm::ArrayType *DesiredType =
         cast<llvm::ArrayType>(CGM.getTypes().ConvertType(ILE->getType()));
-    return EmitArrayConstant(CGM, Desired, CommonElementType, NumElements, Elts,
-                             fillC);
+
+    auto *FillerType =
+        CommonElementType ? CommonElementType : DesiredType->getElementType();
+    FillerType = llvm::ArrayType::get(FillerType, TrailingZeroes);
+    
+    Inits.push_back(llvm::ConstantAggregateZero::get(FillerType));
+
+    llvm::SmallVector<llvm::Type *, 16> Types;
+    for (llvm::Constant *Elt : Inits)
+      Types.push_back(Elt->getType());
+
+    llvm::StructType *SType =
+        llvm::StructType::get(CGM.getLLVMContext(), Types, true);
+
+    return llvm::ConstantStruct::get(SType, Inits);
   }
 
   llvm::Constant *EmitRecordInitialization(InitListExpr *ILE, QualType T) {
